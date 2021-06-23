@@ -54,7 +54,8 @@ class CasAuthenticate extends BaseAuthenticate
         $settings = $this->getConfig();
 
         if (!empty($settings['debug'])) {
-            phpCAS::setDebug(LOGS . 'phpCas.log');
+            //phpCAS::setDebug(LOGS . 'phpCas.log');
+            phpCAS::setLogger();
         }
 
         //The "isInitialized" check isn't necessary during normal use,
@@ -166,7 +167,7 @@ class CasAuthenticate extends BaseAuthenticate
     /**
      * {@inheritDoc}
      */
-    public function implementedEvents()
+    public function implementedEvents(): array
     {
         return ['Auth.logout' => 'logout'];
     }

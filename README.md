@@ -1,6 +1,6 @@
-# CAS Authentication for CakePHP 3.x
+# CAS Authentication for CakePHP 4.x
 
-Very basic CAS Authentication for CakePHP 3.
+Very basic CAS Authentication for CakePHP 4.
 
 ## Installing via composer
 
@@ -9,7 +9,7 @@ For existing applications you can add the following to your composer.json file:
 
 ```json
     "require": {
-        "uazgraduatecollege/cakephp-3-cas": "~1.0"
+        "uazgraduatecollege/cakephp-casauth": "~1.0"
     }
 ```
 

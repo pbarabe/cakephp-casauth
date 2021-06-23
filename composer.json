@@ -1,6 +1,6 @@
 {
-    "name": "uazgraduatecollege/cakephp-3-cas",
-    "description": "CAS Authentication wrapper for CakePHP 3.x using Apereo (formerly Jasig) phpCAS",
+    "name": "uazgraduatecollege/cakephp-casauth",
+    "description": "CAS Authentication wrapper for CakePHP 4.x using Apereo (formerly Jasig) phpCAS",
     "kewords": ["CAS", "authentication"],
     "license": [
       "MIT",
@@ -27,7 +27,7 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=7.2",
-        "cakephp/cakephp": "~3.8.0",
+        "cakephp/cakephp": "~4.0.0",
         "apereo/phpcas": "~1.4.0"
     },
     "require-dev": {
@@ -45,7 +45,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github.com:uazgraduatecollege/cakephp-3-cas.git"
+            "url": "git@github.com:uazgraduatecollege/cakephp-casauth.git"
         }
     ]
 }

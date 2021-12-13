@@ -8,6 +8,12 @@ Install into your project using [composer](http://getcomposer.org).
 For existing applications you can add the following to your composer.json file:
 
 ```json
+    "repositories": [
+      {
+        "type": "git",
+        "url": "https://github.com/uazgraduatecollege/cakephp-casauth.git"
+      }
+    ],
     "require": {
         "uazgraduatecollege/cakephp-casauth": "~1.0"
     }

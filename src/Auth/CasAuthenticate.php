@@ -37,7 +37,8 @@ class CasAuthenticate extends BaseAuthenticate
     protected $_defaultConfig = [
         'hostname' => null,
         'port' => 443,
-        'uri' => ''
+        'uri' => '',
+        'client_name' => null,
     ];
 
     /**
@@ -54,8 +55,11 @@ class CasAuthenticate extends BaseAuthenticate
         $settings = $this->getConfig();
 
         if (!empty($settings['debug'])) {
-            //phpCAS::setDebug(LOGS . 'phpCas.log');
             phpCAS::setLogger();
+        }
+
+        if (empty($settings['client_name'])) {
+            $settings['client_name'] = $_SERVER['SERVER_NAME'];
         }
 
         //The "isInitialized" check isn't necessary during normal use,
@@ -63,7 +67,13 @@ class CasAuthenticate extends BaseAuthenticate
         //the fact that phpCAS uses a static global initialization can
         //cause problems
         if (!phpCAS::isInitialized()) {
-            phpCAS::client(CAS_VERSION_2_0, $settings['hostname'], $settings['port'], $settings['uri']);
+          phpCAS::client(
+            CAS_VERSION_2_0,
+            $settings['hostname'],
+            $settings['port'],
+            $settings['uri'],
+            $settings['client_name'],
+          );
         }
 
         if (!empty($settings['curlopts'])) {

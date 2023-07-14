@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Copyright 2015 Glen Sawyer
 
@@ -20,8 +22,8 @@
 namespace CasAuth\Auth;
 
 use Cake\Auth\BaseAuthenticate;
-use Cake\Controller\ComponentRegistry;
 use Cake\Controller\Component\AuthComponent;
+use Cake\Controller\ComponentRegistry;
 use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventDispatcherTrait;
@@ -38,42 +40,47 @@ class CasAuthenticate extends BaseAuthenticate
         'hostname' => null,
         'port' => 443,
         'uri' => '',
-        'client_name' => null,
+        'client_url' => null,
     ];
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function __construct(ComponentRegistry $registry, array $config = [])
     {
-        //Configuration params can be set via global Configure::write or via Auth->config
-        //Auth->config params override global Configure, so we'll pass them in last
+        // Configuration params can be set via global Configure::write or via Auth->config
+        // Auth->config params override global Configure, so we'll pass them in last
         parent::__construct($registry, (array)Configure::read('CAS'));
         $this->setConfig($config);
 
-        //Get the merged config settings
+        // Get the merged config settings
         $settings = $this->getConfig();
 
+        // Enable logging/debugging
         if (!empty($settings['debug'])) {
             phpCAS::setLogger();
         }
 
-        if (empty($settings['client_name'])) {
-            $settings['client_name'] = $_SERVER['SERVER_NAME'];
+        // Set default value of $service_base_url passed to phpCAS::client()
+        if (empty($settings['client_url'])) {
+            $settings['client_url'] =
+                $_SERVER['REQUEST_SCHEME']
+                . '://'
+                . $_SERVER['HTTP_HOST'];
         }
 
-        //The "isInitialized" check isn't necessary during normal use,
-        //but during *testing* if Authentication is tested more than once, then
-        //the fact that phpCAS uses a static global initialization can
-        //cause problems
+        // The "isInitialized" check isn't necessary during normal use,
+        // but during *testing* if Authentication is tested more than once, then
+        // the fact that phpCAS uses a static global initialization can
+        // cause problems
         if (!phpCAS::isInitialized()) {
-          phpCAS::client(
-            CAS_VERSION_2_0,
-            $settings['hostname'],
-            $settings['port'],
-            $settings['uri'],
-            $settings['client_name'],
-          );
+            phpCAS::client(
+                CAS_VERSION_2_0,
+                $settings['hostname'],
+                $settings['port'],
+                $settings['uri'],
+                $settings['client_url'],
+            );
         }
 
         if (!empty($settings['curlopts'])) {

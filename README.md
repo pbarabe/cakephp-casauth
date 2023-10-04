@@ -82,7 +82,7 @@ match variable names as used in the `apereo/phpcas`
 [example client usage](https://github.com/apereo/phpCAS/blob/master/docs/examples/example_simple.php).
 
 - `hostname` changed to `cas_host`
-- `port` changed to `cas_port
+- `port` changed to `cas_port`
 - `uri` changed to `cas_context`
 
 cakephp-casauth looks for input parameters using the old keys to try to remain backwards compatible.

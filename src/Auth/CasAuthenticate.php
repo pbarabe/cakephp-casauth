@@ -36,11 +36,23 @@ class CasAuthenticate extends BaseAuthenticate
 {
     use EventDispatcherTrait;
 
+    /**
+     * $_defaultConfig
+     *
+     * Default configuration array of variables passed to phpcas::client()
+     *
+     * @var $_defaultConfig['cas_host'] string The CAS host/domain name, eg. example.domain.com
+     * @var $_defaultConfig['cas_port'] string The CAS host/domain name, eg. example.domain.com
+     * @var $_defaultConfig['cas_context'] string The CAS host/domain name, eg. example.domain.com
+     * @var $_defaultConfig['client_service_name'] string Full URL of the client identified as protocol://host:port, eg. https://casclient.example.com
+     * @var $_defaultConfig['debug'] string The CAS host/domain name, eg. example.domain.com
+     */
     protected $_defaultConfig = [
-        'hostname' => null,
-        'port' => 443,
-        'uri' => '',
-        'client_url' => null,
+        'cas_host' => null,
+        'cas_port' => 443,
+        'cas_context' => '',
+        'client_service_name' => null,
+        'debug' => false,
     ];
 
     /**
@@ -48,6 +60,27 @@ class CasAuthenticate extends BaseAuthenticate
      */
     public function __construct(ComponentRegistry $registry, array $config = [])
     {
+        // For backwards-compatibility, re-map older settings keys to new ones
+        if (empty($config['cas_host']) && !empty($config['hostname'])) {
+            $config['cas_host'] = $config['hostname'];
+            unset($config['hostname']);
+        }
+        if (empty($config['cas_port']) && !empty($config['port'])) {
+            $config['cas_port'] = $config['port'];
+            unset($config['port']);
+        }
+        if (empty($config['cas_context']) && !empty($config['uri'])) {
+            $config['cas_context'] = $config['uri'];
+            unset($config['uri']);
+        }
+        // Set default value of $service_base_url passed to phpCAS::client()
+        if (empty($config['client_service_name'])) {
+            $config['client_service_name'] =
+                $_SERVER['REQUEST_SCHEME']
+                . '://'
+                . $_SERVER['HTTP_HOST'];
+        }
+
         // Configuration params can be set via global Configure::write or via Auth->config
         // Auth->config params override global Configure, so we'll pass them in last
         parent::__construct($registry, (array)Configure::read('CAS'));
@@ -61,14 +94,6 @@ class CasAuthenticate extends BaseAuthenticate
             phpCAS::setLogger();
         }
 
-        // Set default value of $service_base_url passed to phpCAS::client()
-        if (empty($settings['client_url'])) {
-            $settings['client_url'] =
-                $_SERVER['REQUEST_SCHEME']
-                . '://'
-                . $_SERVER['HTTP_HOST'];
-        }
-
         // The "isInitialized" check isn't necessary during normal use,
         // but during *testing* if Authentication is tested more than once, then
         // the fact that phpCAS uses a static global initialization can
@@ -76,10 +101,10 @@ class CasAuthenticate extends BaseAuthenticate
         if (!phpCAS::isInitialized()) {
             phpCAS::client(
                 CAS_VERSION_2_0,
-                $settings['hostname'],
-                $settings['port'],
-                $settings['uri'],
-                $settings['client_url'],
+                $settings['cas_host'],  // $cas_host
+                $settings['cas_port'],      // $cas_port
+                $settings['cas_context'],       // $cas_context
+                $settings['client_service_name'] // $client_service_name
             );
         }
 

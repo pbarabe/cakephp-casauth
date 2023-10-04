@@ -15,7 +15,7 @@ For existing applications you can add the following to your composer.json file:
       }
     ],
     "require": {
-        "uazgraduatecollege/cakephp-casauth": "~1.0"
+        "uazgraduatecollege/cakephp-casauth": "~2.0"
     }
 ```
 
@@ -33,8 +33,9 @@ $this->Auth->config(
     'authenticate',
     [
         'CasAuth.Cas' => [
-            'hostname' => 'cas.mydomain.com',
-            'uri' => 'authpath'
+            'cas_host => 'cas.mydomain.com',
+            'cas_context => '/cas,
+            'client_service_name => 'https://clientapplication.otherdomain.com',
         ]
     ]
 );
@@ -48,8 +49,9 @@ $this->loadComponent(
     [
         'authenticate' => [
             'CasAuth.Cas' => [
-                'hostname' => 'cas.mydomain.com',
-                'uri' => 'authpath'
+                'cas_host => 'cas.mydomain.com',
+                'cas_context => '/cas,
+                'client_service_name => 'https://clientapplication.otherdomain.com',
             ]
         ]
     ]
@@ -57,26 +59,34 @@ $this->loadComponent(
 
 ```
 
-CAS parameters can be specified during `Auth->config` as above,
-or by writing to the "CAS" key in Configure::write, e.g.
-```php
-Configure::write('CAS.hostname', 'cas.myhost.com');
-Configure::write('CAS.port', 8443);
-```
-
 ## Parameters
 
-* **hostname** is required
-* **port** defaults to 443
-* **uri** defaults to '' (an empty string)
-* *client_name* (optional) defaults to `$_SERVER['SERVER_NAME']`
-* *debug* (optional) if true, then phpCAS will write debug info to logs/phpCAS.log
+* **cas_host** is required.
+* **cas_context** defaults to '' (an empty string)
+* *client_service_name* (optional) defaults to `$_SERVER['SERVER_NAME']`
+* *cas_port* defaults to 443
+* *debug* (optional) if true, then phpCAS will write debug info to your configured logger.
 * *cert_path* (optional) if set, then phpCAS will use the specified CA certificate file to verify the CAS server
 * *curlopts* (optional) key/value paired array of additional CURL parameters to pass through to phpCAS::setExtraCurlOption, e.g.
 
 ```php
 'curlopts' => [CURLOPT_PROXY => 'http://proxy:5543', CURLOPT_CRLF => true]
 ```
+
+### Note about parameter key changes
+
+Prior to release 2.0.0, several parameter used different keys.
+Release 2.0.0 updates `apereo/phpcas` to use at least version 1.6, which contains breaking changes.
+For better clarity, the previous parameter key names have been re-mapped to the new names, which
+match variable names as used in the `apereo/phpcas`
+[example client usage](https://github.com/apereo/phpCAS/blob/master/docs/examples/example_simple.php).
+
+- `hostname` changed to `cas_host`
+- `port` changed to `cas_port`
+- `uri` changed to `cas_context`
+
+cakephp-casauth looks for input parameters using the old keys to try to remain backwards compatible.
+Your mileage may vary.
 
 ## License
 

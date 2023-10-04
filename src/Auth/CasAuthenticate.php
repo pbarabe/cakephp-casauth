@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Copyright 2015 Glen Sawyer
 
@@ -20,8 +22,8 @@
 namespace CasAuth\Auth;
 
 use Cake\Auth\BaseAuthenticate;
-use Cake\Controller\ComponentRegistry;
 use Cake\Controller\Component\AuthComponent;
+use Cake\Controller\ComponentRegistry;
 use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventDispatcherTrait;
@@ -34,46 +36,79 @@ class CasAuthenticate extends BaseAuthenticate
 {
     use EventDispatcherTrait;
 
+    /**
+     * $_defaultConfig
+     *
+     * Default configuration array of variables passed to phpcas::client().
+     * Example usage of these settings can be viewed in the apereo/phpcas documentation
+     * at https://github.com/apereo/phpCAS/blob/master/docs/examples/example_simple.php
+     *
+     * @var array $_defaultConfig The array of settings values to configure the CAS client
+     * @var string $_defaultConfig['cas_host'] The CAS host/domain name, eg. example.domain.com
+     * @var int $_defaultConfig['cas_port'] The port where CAS can be reached. Default 443
+     * @var string $_defaultConfig['cas_context'] The URL path that triggers authentication, eg. /cas
+     * @var string $_defaultConfig['client_service_name'] The base URL of the client service in protocol://domain:port format.
+     * @var bool $_defaultConfig['debug'] Whether debugging is on and should trigger log output. Default false
+     */
     protected $_defaultConfig = [
-        'hostname' => null,
-        'port' => 443,
-        'uri' => '',
-        'client_name' => null,
+        'cas_host' => null,
+        'cas_port' => 443,
+        'cas_context' => '',
+        'client_service_name' => null,
+        'debug' => false,
     ];
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function __construct(ComponentRegistry $registry, array $config = [])
     {
-        //Configuration params can be set via global Configure::write or via Auth->config
-        //Auth->config params override global Configure, so we'll pass them in last
+        // For backwards-compatibility, re-map older settings keys to new ones
+        if (empty($config['cas_host']) && !empty($config['hostname'])) {
+            $config['cas_host'] = $config['hostname'];
+            unset($config['hostname']);
+        }
+        if (empty($config['cas_port']) && !empty($config['port'])) {
+            $config['cas_port'] = $config['port'];
+            unset($config['port']);
+        }
+        if (empty($config['cas_context']) && !empty($config['uri'])) {
+            $config['cas_context'] = $config['uri'];
+            unset($config['uri']);
+        }
+        // Set default value of $service_base_url passed to phpCAS::client()
+        if (empty($config['client_service_name'])) {
+            $config['client_service_name'] =
+                $_SERVER['REQUEST_SCHEME']
+                . '://'
+                . $_SERVER['HTTP_HOST'];
+        }
+
+        // Configuration params can be set via global Configure::write or via Auth->config
+        // Auth->config params override global Configure, so we'll pass them in last
         parent::__construct($registry, (array)Configure::read('CAS'));
         $this->setConfig($config);
 
-        //Get the merged config settings
+        // Get the merged config settings
         $settings = $this->getConfig();
 
+        // Enable logging/debugging
         if (!empty($settings['debug'])) {
             phpCAS::setLogger();
         }
 
-        if (empty($settings['client_name'])) {
-            $settings['client_name'] = $_SERVER['SERVER_NAME'];
-        }
-
-        //The "isInitialized" check isn't necessary during normal use,
-        //but during *testing* if Authentication is tested more than once, then
-        //the fact that phpCAS uses a static global initialization can
-        //cause problems
+        // The "isInitialized" check isn't necessary during normal use,
+        // but during *testing* if Authentication is tested more than once, then
+        // the fact that phpCAS uses a static global initialization can
+        // cause problems
         if (!phpCAS::isInitialized()) {
-          phpCAS::client(
-            CAS_VERSION_2_0,
-            $settings['hostname'],
-            $settings['port'],
-            $settings['uri'],
-            $settings['client_name'],
-          );
+            phpCAS::client(
+                CAS_VERSION_2_0,
+                $settings['cas_host'], // $cas_host
+                $settings['cas_port'], // $cas_port
+                $settings['cas_context'], // $cas_context
+                $settings['client_service_name'] // $client_service_name
+            );
         }
 
         if (!empty($settings['curlopts'])) {
@@ -97,7 +132,7 @@ class CasAuthenticate extends BaseAuthenticate
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function authenticate(ServerRequest $request, Response $response)
     {
@@ -118,7 +153,7 @@ class CasAuthenticate extends BaseAuthenticate
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getUser(ServerRequest $request)
     {
@@ -144,8 +179,7 @@ class CasAuthenticate extends BaseAuthenticate
      * Log a user out. Interrupts initial call to AuthComponent logout
      * to handle CAS logout, which happens on separate CAS server
      *
-     * @param Event $event Auth.logout event
-     *
+     * @param \Cake\Event\Event $event Auth.logout event
      * @return void
      */
     public function logout(Event $event)

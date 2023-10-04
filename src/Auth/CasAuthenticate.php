@@ -39,13 +39,16 @@ class CasAuthenticate extends BaseAuthenticate
     /**
      * $_defaultConfig
      *
-     * Default configuration array of variables passed to phpcas::client()
+     * Default configuration array of variables passed to phpcas::client().
+     * Example usage of these settings can be viewed in the apereo/phpcas documentation
+     * at https://github.com/apereo/phpCAS/blob/master/docs/examples/example_simple.php
      *
-     * @var $_defaultConfig['cas_host'] string The CAS host/domain name, eg. example.domain.com
-     * @var $_defaultConfig['cas_port'] string The CAS host/domain name, eg. example.domain.com
-     * @var $_defaultConfig['cas_context'] string The CAS host/domain name, eg. example.domain.com
-     * @var $_defaultConfig['client_service_name'] string Full URL of the client identified as protocol://host:port, eg. https://casclient.example.com
-     * @var $_defaultConfig['debug'] string The CAS host/domain name, eg. example.domain.com
+     * @var array $_defaultConfig The array of settings values to configure the CAS client
+     * @var string $_defaultConfig['cas_host'] The CAS host/domain name, eg. example.domain.com
+     * @var int $_defaultConfig['cas_port'] The port where CAS can be reached. Default 443
+     * @var string $_defaultConfig['cas_context'] The URL path that triggers authentication, eg. /cas
+     * @var string $_defaultConfig['client_service_name'] The base URL of the client service in protocol://domain:port format.
+     * @var bool $_defaultConfig['debug'] Whether debugging is on and should trigger log output. Default false
      */
     protected $_defaultConfig = [
         'cas_host' => null,
@@ -101,9 +104,9 @@ class CasAuthenticate extends BaseAuthenticate
         if (!phpCAS::isInitialized()) {
             phpCAS::client(
                 CAS_VERSION_2_0,
-                $settings['cas_host'],  // $cas_host
-                $settings['cas_port'],      // $cas_port
-                $settings['cas_context'],       // $cas_context
+                $settings['cas_host'], // $cas_host
+                $settings['cas_port'], // $cas_port
+                $settings['cas_context'], // $cas_context
                 $settings['client_service_name'] // $client_service_name
             );
         }
@@ -129,7 +132,7 @@ class CasAuthenticate extends BaseAuthenticate
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function authenticate(ServerRequest $request, Response $response)
     {
@@ -150,7 +153,7 @@ class CasAuthenticate extends BaseAuthenticate
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getUser(ServerRequest $request)
     {
@@ -176,8 +179,7 @@ class CasAuthenticate extends BaseAuthenticate
      * Log a user out. Interrupts initial call to AuthComponent logout
      * to handle CAS logout, which happens on separate CAS server
      *
-     * @param Event $event Auth.logout event
-     *
+     * @param \Cake\Event\Event $event Auth.logout event
      * @return void
      */
     public function logout(Event $event)
